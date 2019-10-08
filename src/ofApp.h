@@ -28,6 +28,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     
         void updateFbo();
+        void playSplash();
     
     // LED - Teensy stuff
     //-----------------------------

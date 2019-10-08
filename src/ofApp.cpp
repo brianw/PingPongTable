@@ -65,7 +65,7 @@ void ofApp::setup(){
     dir.allowExt("wav");
     dir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
 
-    //allocate the vector to have as many ofImages as files
+    //allocate the vector to have as many soundplayers as files
     if( dir.size() ){
         splashes.assign(dir.size(), ofSoundPlayer());
     }
@@ -73,6 +73,7 @@ void ofApp::setup(){
     // you can now iterate through the files and load them into the ofImage vector
     for(int i = 0; i < (int)dir.size(); i++){
         splashes[i].load(dir.getPath(i));
+        cout << "loaded sound " << dir.getPath(i) << endl;
     }
 }
 
@@ -132,7 +133,8 @@ void ofApp::update(){
                 float x = ofMap(lastLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
                 float y = ofMap(lastLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
                 ofEllipse(x,y,10,10);
-                
+                playSplash();
+
                 //mark Location event as handled
                 gotLocation = false;
             }
@@ -172,13 +174,13 @@ void ofApp::update(){
                 float x = ofMap(lastLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
                 float y = ofMap(lastLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
                 ofEllipse(x,y,10,10);
-                
+                playSplash();
                 //mark Location event as handled
                 gotLocation = false;
             }
             //ofEllipse(mouseX,mouseY, 10,10);
             //DID WE GET BONK (GUESS LOCATION)
-            ofEllipse(mouseX,mouseY, 10,10);
+            //ofEllipse(mouseX,mouseY, 10,10);
             texture2.end();
             ofPopMatrix();
             ofPopStyle();
@@ -240,6 +242,13 @@ void ofApp::updateFbo(){
     fbo.readToPixels(teensy.pixels1);
 }
 
+void ofApp::playSplash(){
+    //play splash
+    int i = ofRandom(0,splashes.size()-1);
+    cout << i << endl;
+    splashes[i].setPan(ofMap(lastLocation.y, 0.0, tableLength, -1.0, 1.0, true));
+    splashes[i].play();
+}
 //--------------------------------------------------------------
 void ofApp::draw(){
 
