@@ -68,4 +68,8 @@ class ofApp : public ofBaseApp{
     //physical table stuff
     float tableWidth;
     float tableLength;
+
+    //sound stuff
+    ofDirectory dir;
+    vector<ofSoundPlayer> splashes;
 };

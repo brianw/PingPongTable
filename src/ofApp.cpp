@@ -59,6 +59,21 @@ void ofApp::setup(){
     //physical table stuff
     tableWidth = 1.584;
     tableLength = 3.24;
+
+    //sound stuff
+    dir.listDir("sounds/splashes/");
+    dir.allowExt("wav");
+    dir.sort(); // in linux the file system doesn't return file lists ordered in alphabetical order
+
+    //allocate the vector to have as many ofImages as files
+    if( dir.size() ){
+        splashes.assign(dir.size(), ofSoundPlayer());
+    }
+
+    // you can now iterate through the files and load them into the ofImage vector
+    for(int i = 0; i < (int)dir.size(); i++){
+        splashes[i].load(dir.getPath(i));
+    }
 }
 
 void ofApp::exit(){
@@ -121,7 +136,7 @@ void ofApp::update(){
                 //mark Location event as handled
                 gotLocation = false;
             }
-            ofEllipse(mouseX,mouseY, 10,10);
+            //ofEllipse(mouseX,mouseY, 10,10);
             //DID WE GET BONK (GUESS LOCATION)
             texture1.end();
             ofPopMatrix();
