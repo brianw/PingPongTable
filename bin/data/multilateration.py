@@ -9,6 +9,9 @@ from pythonosc import osc_bundle_builder
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
+farsideSensorLocations = [[1.37, 0.16], [0.16, 0.16], [0.75, 0.75], [0.75, 1.37]]
+nearsdieSensorLocations = [[0.16, 2.63], [1.37, 2.63], [0.75, 2.04], [0.75, 1.41]]
+
 def farside(sensorTimes):
 	#speed of sound in medium
 	#v = 1128
@@ -27,7 +30,7 @@ def farside(sensorTimes):
 	# sensor3...
 	sensorLocations = [sensor1, sensor2, sensor3, sensor4]
 
-	p = matrix( sensorLocations ).T
+	p = matrix( farsideSensorLocations ).T
 
 	c = argmin(sensorTimes)
 	cTime = sensorTimes[c]
@@ -77,7 +80,7 @@ def nearside(sensorTimes):
 		
 		sensorLocations = [sensor1, sensor2, sensor3, sensor4]
 
-		p = matrix( sensorLocations ).T
+		p = matrix( nearsdieSensorLocations ).T
 
 		c = argmin(sensorTimes)
 
@@ -135,3 +138,8 @@ while True:
 		print (pos)
 		client.send_message("/farside/location", pos)
 		client.send_message("/location", pos)
+
+	if (values[0] == "C"):
+
+	if (values[0] == "D"):
+
