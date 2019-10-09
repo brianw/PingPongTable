@@ -23,10 +23,6 @@ void ofApp::setup(){
     teensy.serialConfigure("TEENSY3", 0, 25, 100, 25, 0);
     teensy.serialConfigure("TEENSY1", 0, 50, 100, 25, 0);
     teensy.serialConfigure("TEENSY2", 0, 75, 100, 25, 0);
-//    teensy.serialConfigure("ttyACM3", 0, 0, 100, 25, 0);
-//    teensy.serialConfigure("ttyACM4", 0, 25, 100, 25, 0);
-//    teensy.serialConfigure("ttyACM2", 0, 50, 100, 25, 0);
-//    teensy.serialConfigure("ttyACM1", 0, 75, 100, 25, 0);
     
     // allocate our pixels, fbo, and texture
     fbo.allocate(stripWidth, stripHeight*stripsPerPort*numPorts, GL_RGB);
@@ -125,14 +121,34 @@ void ofApp::update(){
             ofPushStyle();
             ofPushMatrix();
             texture1.begin();
-            ofFill();
-            ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
             //DID WE GET LOCATION
-            if(gotLocation) {
+            if (gotNearSideLocation) {
                 //map ball hit location to x y pixel location
-                float x = ofMap(lastLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
-                ofEllipse(x,y,10,10);
+                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
+                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
+                //ofSetColor(255,255);
+                ofFill();
+                ofDrawEllipse(x,y,12,12 );
+                ofSetColor(0,0,255,255);
+                ofFill();
+                ofDrawEllipse(x,y,10,10);
+                gotNearSideLocation = false;
+            }
+            if (gotFarSideLocation) {
+                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
+                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
+                //ofSetColor(255,255);
+                ofFill();
+                ofDrawEllipse(x,y,12,12);
+                ofSetColor(0,255,0,255);
+                ofFill();
+                ofDrawEllipse(x,y,10,10);
+                gotFarSideLocation = false;
+            }
+            if(gotLocation) {
+                
                 playSplash();
 
                 //mark Location event as handled
@@ -169,18 +185,40 @@ void ofApp::update(){
             ofFill();
             ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
             //DID WE GET LOCATION
-            if(gotLocation) {
+            if (gotNearSideLocation) {
                 //map ball hit location to x y pixel location
-                float x = ofMap(lastLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
+                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
+                //ofSetColor(255,255);
+                ofFill();
+                ofDrawEllipse(x,y,12,12);
+                ofSetColor(0,0,255,255);
+                ofFill();
+                ofDrawEllipse(x,y,10,10);
+                gotNearSideLocation = false;
+            }
+            if (gotFarSideLocation) {
+                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
+                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
+                //ofSetColor(255,255);
+                ofFill();
+                ofEllipse(x,y,12,12);
+                ofSetColor(0,255,0,255);
+                ofFill();
                 ofEllipse(x,y,10,10);
+                gotFarSideLocation = false;
+            }
+            if(gotLocation) {
+                
                 playSplash();
+
                 //mark Location event as handled
                 gotLocation = false;
             }
             //ofEllipse(mouseX,mouseY, 10,10);
             //DID WE GET BONK (GUESS LOCATION)
-            //ofEllipse(mouseX,mouseY, 10,10);
             texture2.end();
             ofPopMatrix();
             ofPopStyle();
