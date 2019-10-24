@@ -1,2 +1,3 @@
 ofxTeensyOcto
 ofxOsc
+ofxTiming

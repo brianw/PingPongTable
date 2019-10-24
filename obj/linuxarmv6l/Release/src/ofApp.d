@@ -601,7 +601,15 @@ obj/linuxarmv6l/Release/src/ofApp.o: \
  /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h \
  /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h \
  /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h
+ /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/ofxTiming.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/DelayTimer.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/FadeTimer.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/Hysteresis.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/RateTimer.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/LerpTimer.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h \
+ /home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h
 
 /home/pi/openFrameworks/apps/myApps/octo/src/ofApp.h:
 
@@ -1846,3 +1854,19 @@ obj/linuxarmv6l/Release/src/ofApp.o: \
 /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h:
 
 /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/ofxTiming.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/DelayTimer.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/FadeTimer.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/Hysteresis.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/RateTimer.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/LerpTimer.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h:
+
+/home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h:
