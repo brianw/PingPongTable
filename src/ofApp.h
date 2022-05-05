@@ -4,6 +4,7 @@
 #include "ofxOsc.h"
 #include "ofMain.h"
 #include "ofxTiming.h"
+#include "fish.h"
 
 #define PORT 6666
 #define PORT2 7778
@@ -55,6 +56,7 @@ class ofApp : public ofBaseApp{
     ofFbo texture1;
     ofFbo texture2;
     ofFbo texture3;
+    ofFbo fishTexture;
     bool even;
     float damping;
     
@@ -81,6 +83,10 @@ class ofApp : public ofBaseApp{
     //sound stuff
     ofDirectory dir;
     vector<ofSoundPlayer> splashes;
+
+    //fish stuff
+    Fish fish1;
+    Fish fish2;
 
     //dub step mode stuff
     ofFbo texture4;

@@ -98,6 +98,9 @@ parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server"
 parser.add_argument("--port", type=int, default=6666, help="The port the OSC server is listening on")
 args = parser.parse_args()
 client = udp_client.SimpleUDPClient(args.ip, args.port)
+client2 = udp_client.SimpleUDPClient(args.ip, 7778)
+client2.send_message("/video", 2)
+
 print("Started")
 
 while True:

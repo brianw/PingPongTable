@@ -609,7 +609,8 @@ obj/linuxarmv6l/Release/src/ofApp.o: \
  /home/pi/openFrameworks/addons/ofxTiming/src/RateTimer.h \
  /home/pi/openFrameworks/addons/ofxTiming/src/LerpTimer.h \
  /home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h
+ /home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h \
+ /home/pi/openFrameworks/apps/myApps/octo/src/fish.h
 
 /home/pi/openFrameworks/apps/myApps/octo/src/ofApp.h:
 
@@ -1870,3 +1871,5 @@ obj/linuxarmv6l/Release/src/ofApp.o: \
 /home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h:
 
 /home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h:
+
+/home/pi/openFrameworks/apps/myApps/octo/src/fish.h:

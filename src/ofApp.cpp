@@ -67,6 +67,13 @@ void ofApp::setup(){
     //     splashes.assign(dir.size(), ofSoundPlayer());
     // }
 
+    fish1.setup(lastLocation, ofColor(0,255,0), 0.05);
+    fish2.setup(lastLocation, ofColor(0,0,255), 0.05);
+    fishTexture.allocate(ofGetWidth(), ofGetHeight());
+    fishTexture.begin();
+    ofClear(0, 0, 0, 0);
+    fishTexture.end();
+
     // you can now iterate through the files and load them into the ofImage vector
     for(int i = 0; i < (int)dir.size(); i++){
         ofSoundPlayer s = ofSoundPlayer();
@@ -154,8 +161,6 @@ void ofApp::setup(){
         //splashes[i].load(dir.getPath(i));
         cout << "loaded sound " << swishBoopDir.getPath(i) << endl;
     }
-
-    mode = 1;
 }
 
 void ofApp::exit(){
@@ -338,6 +343,19 @@ void ofApp::update(){
             //
             even = true;
         }
+        fish1.update(&fish2);
+        fish2.update(&fish1);
+        fishTexture.begin();
+        ofClear(0,0,0);   
+        // ofSetColor(fish1.color);
+        // ofFill();
+        // ofDrawEllipse(ofGetWidth()/2, ofGetHeight()/2, 35.025, 35.025);
+        // ofSetColor(fish2.color);
+        // ofFill();
+        // ofDrawEllipse(fish2.location, 35.025, 35.025);
+        fish1.draw();
+        fish2.draw();
+        fishTexture.end();
         break;
     case 1:
         //handle events
@@ -463,6 +481,7 @@ void ofApp::updateFbo(){
                 texture1.draw(0,0);
                 
             }
+            fishTexture.draw(0,0);
             break;
             
         case 1:

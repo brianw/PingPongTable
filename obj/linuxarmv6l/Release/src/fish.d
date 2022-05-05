@@ -1,5 +1,6 @@
-obj/linuxarmv6l/Release/src/main.o: \
- /home/pi/openFrameworks/apps/myApps/octo/src/main.cpp \
+obj/linuxarmv6l/Release/src/fish.o: \
+ /home/pi/openFrameworks/apps/myApps/octo/src/fish.cpp \
+ /home/pi/openFrameworks/apps/myApps/octo/src/fish.h \
  /home/pi/openFrameworks/libs/openFrameworks/ofMain.h \
  /home/pi/openFrameworks/libs/openFrameworks/utils/ofConstants.h \
  /opt/vc/include/bcm_host.h \
@@ -583,34 +584,9 @@ obj/linuxarmv6l/Release/src/main.o: \
  /home/pi/openFrameworks/libs/openFrameworks/video/ofGstVideoPlayer.h \
  /home/pi/openFrameworks/libs/openFrameworks/3d/of3dUtils.h \
  /home/pi/openFrameworks/libs/openFrameworks/3d/ofCamera.h \
- /home/pi/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h \
- /home/pi/openFrameworks/apps/myApps/octo/src/ofApp.h \
- /home/pi/openFrameworks/addons/ofxTeensyOcto/src/ofxTeensyOcto.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOsc.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscArg.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscSender.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscOutboundPacketStream.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscException.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/UdpSocket.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscBundle.h \
- /home/pi/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h \
- /home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/ofxTiming.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/DelayTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/FadeTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/Hysteresis.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/RateTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/LerpTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h \
- /home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h \
- /home/pi/openFrameworks/apps/myApps/octo/src/fish.h
+ /home/pi/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h
+
+/home/pi/openFrameworks/apps/myApps/octo/src/fish.h:
 
 /home/pi/openFrameworks/libs/openFrameworks/ofMain.h:
 
@@ -1819,57 +1795,3 @@ obj/linuxarmv6l/Release/src/main.o: \
 /home/pi/openFrameworks/libs/openFrameworks/3d/ofCamera.h:
 
 /home/pi/openFrameworks/libs/openFrameworks/3d/ofEasyCam.h:
-
-/home/pi/openFrameworks/apps/myApps/octo/src/ofApp.h:
-
-/home/pi/openFrameworks/addons/ofxTeensyOcto/src/ofxTeensyOcto.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOsc.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOscArg.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOscMessage.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOscSender.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscOutboundPacketStream.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscTypes.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscException.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/UdpSocket.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/NetworkingUtils.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/ip/IpEndpointName.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOscBundle.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/src/ofxOscReceiver.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/OscReceivedElements.h:
-
-/home/pi/openFrameworks/addons/ofxOsc/libs/oscpack/src/osc/../ip/PacketListener.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/ofxTiming.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/DelayTimer.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/FadeTimer.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/Hysteresis.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/RateTimer.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/LerpTimer.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/DurationTimer.h:
-
-/home/pi/openFrameworks/addons/ofxTiming/src/OnlineStatistics.h:
-
-/home/pi/openFrameworks/apps/myApps/octo/src/fish.h:
