@@ -10,6 +10,7 @@
 #define PORT2 7778
 #define OUTPORT 7777
 #define HOST "127.0.0.1"
+#define TIME_BEFORE_RAINBOW 60*1000
 
 class ofApp : public ofBaseApp{
 	public:
@@ -62,6 +63,7 @@ class ofApp : public ofBaseApp{
     
     //game stuff
     int mode;
+    int game;
     ofVec2f lastNearSideLocation;
     bool gotNearSideLocation;
     ofVec2f lastFarSideLocation;
@@ -113,4 +115,8 @@ class ofApp : public ofBaseApp{
 
     ofDirectory swishBoopDir;
     vector<ofSoundPlayer> swishBoops;
+
+    //rainbow
+    ofFbo texture5;
+    uint64_t timeLastBonk;
 };

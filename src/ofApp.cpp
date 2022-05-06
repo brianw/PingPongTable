@@ -161,6 +161,12 @@ void ofApp::setup(){
         //splashes[i].load(dir.getPath(i));
         cout << "loaded sound " << swishBoopDir.getPath(i) << endl;
     }
+
+    //set up rainbow mode
+    texture5.allocate(ofGetWidth(), ofGetHeight());
+    texture5.begin();
+    ofClear(0, 0, 0, 0);
+    texture5.end();
 }
 
 void ofApp::exit(){
@@ -202,6 +208,19 @@ void ofApp::update(){
             gotLocation = true;
             cout << "got location x = " << m.getArgAsFloat(0) << " y = " << m.getArgAsFloat(1) << endl;
         }
+        
+        
+    }
+
+//
+    if (gotNearSideLocation || gotFarSideLocation || gotLocation) {
+        timeLastBonk = ofGetSystemTimeMillis();
+        mode = game;
+        cout << "mode = " << game << endl;
+    }
+
+    if (ofGetSystemTimeMillis() > timeLastBonk + TIME_BEFORE_RAINBOW) {
+        mode = 2;
     }
 
     while(receiver2.hasWaitingMessages()){
@@ -209,7 +228,7 @@ void ofApp::update(){
         ofxOscMessage m;
         receiver2.getNextMessage(m);
         if(m.getAddress() == "/video") {
-            mode = m.getArgAsInt(0) % 2;
+            game = m.getArgAsInt(0) % 3;
             cout << "got /video = " << m.getArgAsInt(0) << endl;
             cout << "setting mode = " << mode << endl;
         }
@@ -457,6 +476,23 @@ void ofApp::update(){
         ofPopStyle();
 
         break;
+
+    case 2:
+        ofPushStyle();
+        ofPushMatrix();
+        texture5.begin();
+        for (int i = 0; i < 10; i++) {
+            ofColor c = ofColor::fromHsb(static_cast<int>(ofGetFrameNum() + ofMap(i, 0, 10, 0, 255)) % 255, 255, 255);
+            ofSetColor(c);
+            ofFill();
+            ofDrawRectangle(0.0, ((i * ofGetHeight() / 10)) % ofGetHeight(), ofGetWidth(), (ofGetHeight()/10)+1);
+            //ofDrawRectangle(0.0, (ofGetFrameNum()/2 + (i * ofGetHeight() / 10)) % ofGetHeight(), ofGetWidth(), (ofGetHeight()/10)+1);
+
+        }
+        texture5.end();
+        ofPopMatrix();
+        ofPopStyle();
+        break;
     }
     
     updateFbo();                                // update our Fbo functions
@@ -486,6 +522,10 @@ void ofApp::updateFbo(){
             
         case 1:
             texture4.draw(0,0);
+            break;
+        
+        case 2:
+            texture5.draw(0,0);
             break;
     }
     
