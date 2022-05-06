@@ -221,6 +221,8 @@ void ofApp::update(){
 
     if (ofGetSystemTimeMillis() > timeLastBonk + TIME_BEFORE_RAINBOW) {
         mode = 2;
+    } else {
+        mode = game;
     }
 
     while(receiver2.hasWaitingMessages()){
@@ -228,9 +230,9 @@ void ofApp::update(){
         ofxOscMessage m;
         receiver2.getNextMessage(m);
         if(m.getAddress() == "/video") {
-            game = m.getArgAsInt(0) % 3;
+            game = m.getArgAsInt(0) % 2;
             cout << "got /video = " << m.getArgAsInt(0) << endl;
-            cout << "setting mode = " << mode << endl;
+            cout << "setting game = " << game << endl;
         }
     }
 
@@ -397,6 +399,10 @@ void ofApp::update(){
             //play bloop
 
             gotNearSideLocation = false;
+        }
+
+        if (gotLocation) {
+            gotLocation = false;
         }
 
         //handle timer
