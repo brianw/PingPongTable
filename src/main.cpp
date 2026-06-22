@@ -10,8 +10,9 @@ int main( ){
     //settings.height = 96;
     settings.setSize(44,96);
     ofCreateWindow(settings);
+#else
+    ofSetupOpenGL(1024,768,OF_WINDOW);
 #endif
-    //ofSetupOpenGL(1024,768,OF_WINDOW);			// <-------- setup the GL context
     
     // this kicks off the running of my app
     // can be OF_WINDOW or OF_FULLSCREEN

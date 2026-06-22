@@ -643,7 +643,13 @@ void ofApp::dubStepEvent(ofVec2f loc, bool isNear){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+#ifdef TARGET_OSX
+    ofSetColor(255);
+    float scale = std::min(ofGetWidth() / fbo.getWidth(), ofGetHeight() / fbo.getHeight());
+    float width = fbo.getWidth() * scale;
+    float height = fbo.getHeight() * scale;
+    fbo.draw((ofGetWidth() - width) / 2, (ofGetHeight() - height) / 2, width, height);
+#endif
 }
 
 //--------------------------------------------------------------
