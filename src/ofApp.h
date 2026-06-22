@@ -33,6 +33,8 @@ class ofApp : public ofBaseApp{
     
         void updateFbo();
         void playSplash();
+        void handleLocation(ofVec2f location, bool isNear);
+        ofRectangle getPreviewBounds();
 
         void dubStepEvent(ofVec2f loc, bool isNear);
 
