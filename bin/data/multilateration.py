@@ -1,18 +1,57 @@
 from serialread import ReadLine
-import serial
+import builtins
 from numpy import *
 from numpy.linalg import *
-import argparse
 import random
-import time
-from pythonosc import osc_bundle_builder
-from pythonosc import osc_message_builder
-from pythonosc import udp_client
 
 farsideSensorLocations = [[1.37, 0.16], [0.16, 0.16], [0.75, 0.75], [0.75, 1.37]]
 nearsideSensorLocations = [[0.16, 2.63], [1.37, 2.63], [0.75, 2.04], [0.75, 1.41]]
 numOfDimensions = 2
 nSensors = 4
+tableWidth = 1.584
+tableLength = 3.24
+
+def parseSerialLine(line):
+	values = line.rstrip().split()
+	if not values or values[0] not in ("A", "B", "C", "D"):
+		raise ValueError("expected an A, B, C, or D serial line")
+
+	if values[0] in ("A", "B"):
+		if len(values) != 5:
+			raise ValueError("expected four sensor times")
+		return values[0], [float(value) / 1000000 for value in values[1:]]
+
+	if len(values) < 3 or len(values) % 2 == 0:
+		raise ValueError("expected sensor ID and time pairs")
+
+	partial = [[int(values[i]), int(values[i+1])] for i in range(1, len(values), 2)]
+	firstSensor = 1 if values[0] == "C" else 5
+	if builtins.any(sensor < firstSensor or sensor >= firstSensor + nSensors for sensor, _ in partial):
+		raise ValueError("sensor ID does not match side")
+	return values[0], partial
+
+def calculateSerialLine(line, rng=None):
+	lineType, sensorData = parseSerialLine(line)
+	if lineType in ("A", "B"):
+		pos = nearside(sensorData) if lineType == "A" else farside(sensorData)
+		return {
+			"side": "near" if lineType == "A" else "far",
+			"x": float(pos[0]),
+			"y": float(pos[1]),
+			"valid": builtins.bool(pos[0] > 0.0 and pos[0] < tableWidth and pos[1] > 0.0 and pos[1] < tableLength),
+		}
+
+	rng = rng or random
+	closest = builtins.min(sensorData, key=lambda sensor: sensor[1])[0]
+	locations = nearsideSensorLocations if lineType == "C" else farsideSensorLocations
+	firstSensor = 1 if lineType == "C" else 5
+	pos = locations[closest - firstSensor]
+	return {
+		"side": "near" if lineType == "C" else "far",
+		"x": pos[0] + rng.uniform(-0.15, 0.15),
+		"y": pos[1] + rng.uniform(-0.15, 0.15),
+		"valid": False,
+	}
 
 def farside(sensorTimes):
 	#speed of sound in medium
@@ -39,9 +78,9 @@ def farside(sensorTimes):
 	for i in ijs:
 		for j in ijs:
 			A[iRow,:] = 2*( v*(t[j])*(p[:,i]-p[:,c]).T - v*(t[i])*(p[:,j]-p[:,c]).T )
-			b[iRow,0] = v*(t[i])*(v*v*(t[j])**2-p[:,j].T*p[:,j]) + \
-			(v*(t[i])-v*(t[j]))*p[:,c].T*p[:,c] + \
-			v*(t[j])*(p[:,i].T*p[:,i]-v*v*(t[i])**2)
+			b[iRow,0] = v*(t[i])*(v*v*(t[j])**2-(p[:,j].T*p[:,j]).item()) + \
+			(v*(t[i])-v*(t[j]))*(p[:,c].T*p[:,c]).item() + \
+			v*(t[j])*((p[:,i].T*p[:,i]).item()-v*v*(t[i])**2)
 			rankA = matrix_rank(A)
 			if rankA >= numOfDimensions :
 				break
@@ -76,9 +115,9 @@ def nearside(sensorTimes):
 	for i in ijs:
 		for j in ijs:
 			A[iRow,:] = 2*( v*(t[j])*(p[:,i]-p[:,c]).T - v*(t[i])*(p[:,j]-p[:,c]).T )
-			b[iRow,0] = v*(t[i])*(v*v*(t[j])**2-p[:,j].T*p[:,j]) + \
-			(v*(t[i])-v*(t[j]))*p[:,c].T*p[:,c] + \
-			v*(t[j])*(p[:,i].T*p[:,i]-v*v*(t[i])**2)
+			b[iRow,0] = v*(t[i])*(v*v*(t[j])**2-(p[:,j].T*p[:,j]).item()) + \
+			(v*(t[i])-v*(t[j]))*(p[:,c].T*p[:,c]).item() + \
+			v*(t[j])*((p[:,i].T*p[:,i]).item()-v*v*(t[i])**2)
 			rankA = matrix_rank(A)
 			if rankA >= numOfDimensions :
 				break
@@ -90,65 +129,35 @@ def nearside(sensorTimes):
 
 	return calculatedLocation
 
-#Sensors = serial.Serial("/dev/serial/by-id/usb-Teensyduino_USB_Serial_3818950-if00", baudrate=38400, bytesize=8, parity='N', stopbits=1, timeout=None)
-Sensors = serial.Serial("/dev/TEENSY5", baudrate=38400, bytesize=8, parity='N', stopbits=1, timeout=None)
-reader = ReadLine(Sensors)
-parser = argparse.ArgumentParser()
-parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
-parser.add_argument("--port", type=int, default=6666, help="The port the OSC server is listening on")
-args = parser.parse_args()
-client = udp_client.SimpleUDPClient(args.ip, args.port)
-client2 = udp_client.SimpleUDPClient(args.ip, 7778)
-client2.send_message("/video", 2)
+def main():
+	import argparse
+	import serial
+	from pythonosc import udp_client
 
-print("Started")
+	Sensors = serial.Serial("/dev/TEENSY5", baudrate=38400, bytesize=8, parity='N', stopbits=1, timeout=None)
+	reader = ReadLine(Sensors)
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--ip", default="127.0.0.1", help="The ip of the OSC server")
+	parser.add_argument("--port", type=int, default=6666, help="The port the OSC server is listening on")
+	args = parser.parse_args()
+	client = udp_client.SimpleUDPClient(args.ip, args.port)
+	client2 = udp_client.SimpleUDPClient(args.ip, 7778)
+	client2.send_message("/video", 2)
 
-while True:
-	rcv = reader.readline().decode('ascii').rstrip()
-	values = rcv.split(' ')
+	print("Started")
 
-	print(values)
-	if (values[0] == "A"):
-		sensorTimes = [float(values[1])/1000000, int(values[2])/1000000, int(values[3])/1000000, int(values[4])/1000000]
-		pos = nearside(sensorTimes)
-		print (pos)
-		if pos[0] > 0.0 and pos[0] < 1.584 and pos[1] > 0 and pos[1] < 3.24:
-			client.send_message("/nearside/location", [pos[0], pos[1], 1])
-			client.send_message("/location", [pos[0], pos[1], 1])
-		else:
-			clip(pos[0], 0, 1.584)
-			clip(pos[1], 0, 3.24)
-			client.send_message("/nearside/location", [pos[0], pos[1], 0])
-			client.send_message("/location", [pos[0], pos[1], 0])
+	while True:
+		rcv = reader.readline().decode('ascii').rstrip()
+		values = rcv.split()
+		print(values)
 
-	if (values[0] == "B"):
-		sensorTimes = [float(values[1])/1000000, int(values[2])/1000000, int(values[3])/1000000, int(values[4])/1000000]
-		pos = farside(sensorTimes)
-		print (pos)
-		if pos[0] > 0.0 and pos[0] < 1.584 and pos[1] > 0 and pos[1] < 3.24:
-			client.send_message("/farside/location", [pos[0], pos[1], 1])
-			client.send_message("/location", [pos[0], pos[1], 1])
-		else:
-			clip(pos[0], 0, 1.584)
-			clip(pos[1], 0, 3.24)
-			client.send_message("/farside/location", [pos[0], pos[1], 0])
-			client.send_message("/location", [pos[0], pos[1], 0])
+		if values[0] in ("A", "B", "C", "D"):
+			result = calculateSerialLine(rcv)
+			print([result["x"], result["y"]])
+			address = "/nearside/location" if result["side"] == "near" else "/farside/location"
+			message = [result["x"], result["y"], int(result["valid"])]
+			client.send_message(address, message)
+			client.send_message("/location", message)
 
-	if (values[0] == "C"):
-		partial = []
-		for i in range(1, len(values) - 1, 2):
-			partial.append([int(values[i]), int(values[i+1])])
-		closest = min(partial, key=lambda x: x[1])[0]
-		pos = [nearsideSensorLocations[closest-1][0] + random.uniform(-0.15,0.15), nearsideSensorLocations[closest-1][1] + random.uniform(-0.15,0.15)]
-		client.send_message("/nearside/location", [pos[0], pos[1], 0])
-		client.send_message("/location", [pos[0], pos[1], 0])
-
-	if (values[0] == "D"):
-		partial = []
-		for i in range(1, len(values) - 1, 2):
-			partial.append([int(values[i]), int(values[i+1])])
-		closest = min(partial, key=lambda x: x[1])[0]
-		pos = [farsideSensorLocations[closest-5][0] + random.uniform(-0.15,0.15), farsideSensorLocations[closest-5][1] + random.uniform(-0.15,0.15)]
-		client.send_message("/farside/location", [pos[0], pos[1], 0])
-		client.send_message("/location", [pos[0], pos[1], 0])
-
+if __name__ == "__main__":
+	main()

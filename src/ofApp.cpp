@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include "multilateration.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -26,6 +27,7 @@ void ofApp::setup(){
     teensy.serialConfigure("TEENSY3", 0, 25, 100, 25, 0);
     teensy.serialConfigure("TEENSY1", 0, 50, 100, 25, 0);
     teensy.serialConfigure("TEENSY2", 0, 75, 100, 25, 0);
+    sensorSerialAvailable = sensorSerial.setup("/dev/TEENSY5", 38400);
     
     // allocate our pixels, fbo, and texture
     fbo.allocate(stripWidth, stripHeight*stripsPerPort*numPorts, GL_RGB);
@@ -199,6 +201,7 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    updateSensorSerial();
     
     // check for waiting messages
     while(receiver.hasWaitingMessages()){
@@ -554,6 +557,38 @@ void ofApp::updateFbo(){
     ofPopStyle();
     fbo.end();
     fbo.readToPixels(teensy.pixels1);
+}
+
+void ofApp::updateSensorSerial(){
+    if (!sensorSerialAvailable) {
+        return;
+    }
+
+    while (sensorSerial.available() > 0) {
+        int byte = sensorSerial.readByte();
+        if (byte == OF_SERIAL_ERROR) {
+            ofLogError("sensor serial") << "failed to read sensor serial port";
+            sensorSerialAvailable = false;
+            return;
+        }
+        if (byte == OF_SERIAL_NO_DATA) {
+            return;
+        }
+        if (byte == '\n') {
+            std::string line = sensorSerialLine;
+            sensorSerialLine.clear();
+            try {
+                MultilaterationResult result = calculateSerialLine(line);
+                handleLocation(ofVec2f(result.x, result.y), result.side == TableSide::Near);
+                cout << "got serial location x = " << result.x << " y = " << result.y
+                     << " valid = " << result.valid << endl;
+            } catch (const std::exception& error) {
+                ofLogWarning("sensor serial") << "discarding line '" << line << "': " << error.what();
+            }
+        } else if (byte != '\r') {
+            sensorSerialLine += static_cast<char>(byte);
+        }
+    }
 }
 
 void ofApp::playSplash(){

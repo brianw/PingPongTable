@@ -11,3 +11,8 @@ endif
 
 # call the project makefile!
 include $(OF_ROOT)/libs/openFrameworksCompiled/project/makefileCommon/compile.project.mk
+
+.PHONY: test-multilateration
+test-multilateration:
+	$(CXX) -std=c++17 -Isrc -I$(OF_ROOT)/libs/json/include tests/multilateration_test.cpp src/multilateration.cpp -o /tmp/ping-pong-table-multilateration-test
+	/tmp/ping-pong-table-multilateration-test tests/data/multilateration.json

@@ -1,0 +1,10 @@
+[project]
+name = "ping-pong-table"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.5.0",
+    "pyserial>=3.5",
+    "pytest>=9.1.1",
+    "python-osc>=1.10.2",
+]
