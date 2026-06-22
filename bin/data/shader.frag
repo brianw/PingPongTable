@@ -1,4 +1,6 @@
+#ifdef GL_ES
 precision highp float;
+#endif
 uniform sampler2D backbuffer;   // previus buffer
 uniform sampler2D tex0;         // actual buffer
 

@@ -32,7 +32,10 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     
         void updateFbo();
+        void updateSensorSerial();
         void playSplash();
+        void handleLocation(ofVec2f location, bool isNear);
+        ofRectangle getPreviewBounds();
 
         void dubStepEvent(ofVec2f loc, bool isNear);
 
@@ -77,6 +80,11 @@ class ofApp : public ofBaseApp{
     ofxOscReceiver receiver;
     ofxOscReceiver receiver2;
     ofxOscSender sender;
+
+    //sensor serial
+    ofSerial sensorSerial;
+    bool sensorSerialAvailable;
+    std::string sensorSerialLine;
     
     //physical table stuff
     float tableWidth;

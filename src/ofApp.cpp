@@ -1,9 +1,13 @@
 #include "ofApp.h"
+#include "multilateration.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofBackground(0, 0, 0);                      // default background to black / LEDs off
     ofDisableAntiAliasing();                    // we need our graphics sharp for the LEDs
+#ifdef TARGET_OSX
+    ofDisableArbTex();
+#endif
     //ofSetVerticalSync(false);
     //ofSetFrameRate(90);
     
@@ -23,15 +27,23 @@ void ofApp::setup(){
     teensy.serialConfigure("TEENSY3", 0, 25, 100, 25, 0);
     teensy.serialConfigure("TEENSY1", 0, 50, 100, 25, 0);
     teensy.serialConfigure("TEENSY2", 0, 75, 100, 25, 0);
+    sensorSerialAvailable = sensorSerial.setup("/dev/TEENSY5", 38400);
     
     // allocate our pixels, fbo, and texture
     fbo.allocate(stripWidth, stripHeight*stripsPerPort*numPorts, GL_RGB);
     
     //set up ripple stuff
+#ifdef TARGET_OSX
+    shader.setupShaderFromFile(GL_VERTEX_SHADER, "shader.vert");
+    shader.setupShaderFromFile(GL_FRAGMENT_SHADER, "shader.frag");
+    shader.bindDefaults();
+    shader.linkProgram();
+#else
     shader.load("shader");
-    texture1.allocate(ofGetWidth(), ofGetHeight());
-    texture2.allocate(ofGetWidth(), ofGetHeight());
-    texture3.allocate(ofGetWidth(), ofGetHeight());
+#endif
+    texture1.allocate(fbo.getWidth(), fbo.getHeight());
+    texture2.allocate(fbo.getWidth(), fbo.getHeight());
+    texture3.allocate(fbo.getWidth(), fbo.getHeight());
     texture1.begin();
     ofClear(0, 0, 0, 0);
     texture1.end();
@@ -47,6 +59,14 @@ void ofApp::setup(){
     
     //set up game stuff
     mode = 0;
+    game = 0;
+    gotNearSideLocation = false;
+    gotFarSideLocation = false;
+    gotLocation = false;
+    nearSideBonk = false;
+    farSideBonk = false;
+    dubStepState = 0;
+    timeLastBonk = 0;
 
     //osc stuff
     receiver.setup(PORT);
@@ -69,7 +89,7 @@ void ofApp::setup(){
 
     fish1.setup(lastLocation, ofColor(0,255,0), 0.05);
     fish2.setup(lastLocation, ofColor(0,0,255), 0.05);
-    fishTexture.allocate(ofGetWidth(), ofGetHeight());
+    fishTexture.allocate(fbo.getWidth(), fbo.getHeight());
     fishTexture.begin();
     ofClear(0, 0, 0, 0);
     fishTexture.end();
@@ -84,7 +104,7 @@ void ofApp::setup(){
     }
 
     //set up dubstep stuff
-    texture4.allocate(ofGetWidth(), ofGetHeight());
+    texture4.allocate(fbo.getWidth(), fbo.getHeight());
     texture4.begin();
     ofClear(0, 0, 0, 0);
     texture4.end();
@@ -101,8 +121,8 @@ void ofApp::setup(){
                             ofRandom(0, 255),
                             ofRandom(0, 255)
                             );
-    loc1 = ofVec2f(ofGetWidth()/2.0, ofGetHeight()/8);
-    loc2 = ofVec2f(ofGetWidth()/2.0, 7.0 * ofGetHeight()/8);
+    loc1 = ofVec2f(fbo.getWidth()/2.0, fbo.getHeight()/8);
+    loc2 = ofVec2f(fbo.getWidth()/2.0, 7.0 * fbo.getHeight()/8);
     loc3 = ofVec2f(0,0);
     
     lerpTimer1.setDuration(0.2);
@@ -163,7 +183,7 @@ void ofApp::setup(){
     }
 
     //set up rainbow mode
-    texture5.allocate(ofGetWidth(), ofGetHeight());
+    texture5.allocate(fbo.getWidth(), fbo.getHeight());
     texture5.begin();
     ofClear(0, 0, 0, 0);
     texture5.end();
@@ -181,6 +201,7 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    updateSensorSerial();
     
     // check for waiting messages
     while(receiver.hasWaitingMessages()){
@@ -193,15 +214,13 @@ void ofApp::update(){
             nearSideBonk = true;
             cout << "got near side bonk" << endl;
         } else if(m.getAddress() == "/nearside/location") {
-            lastNearSideLocation.set(m.getArgAsFloat(0), m.getArgAsFloat(1));
-            gotNearSideLocation = true;
+            handleLocation(ofVec2f(m.getArgAsFloat(0), m.getArgAsFloat(1)), true);
             cout << "got near side location x = " << m.getArgAsFloat(0) << " y = " << m.getArgAsFloat(1) << endl;
         } else if(m.getAddress() == "/farside/bonk") {
             farSideBonk = true;
             cout << "got far side bonk" << endl;
         } else if(m.getAddress() == "/farside/location") {
-            lastFarSideLocation.set(m.getArgAsFloat(0), m.getArgAsFloat(1));
-            gotFarSideLocation = true;
+            handleLocation(ofVec2f(m.getArgAsFloat(0), m.getArgAsFloat(1)), false);
             cout << "got far side location x = " << m.getArgAsFloat(0) << " y = " << m.getArgAsFloat(1) << endl;
         }  else if(m.getAddress() == "/location") {
             lastLocation.set(m.getArgAsFloat(0), m.getArgAsFloat(1));
@@ -246,8 +265,8 @@ void ofApp::update(){
             //DID WE GET LOCATION
             if (gotNearSideLocation) {
                 //map ball hit location to x y pixel location
-                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
                 ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
                 //ofSetColor(255,255);
                 ofFill();
@@ -258,8 +277,8 @@ void ofApp::update(){
                 gotNearSideLocation = false;
             }
             if (gotFarSideLocation) {
-                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
                 ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
                 //ofSetColor(255,255);
                 ofFill();
@@ -287,10 +306,10 @@ void ofApp::update(){
             shader.setUniformTexture("backbuffer", texture2.getTextureReference(), 0);
             shader.setUniformTexture("tex0", texture1.getTextureReference(), 1);
             shader.setUniform1f("damping", (float)damping );
-            shader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
+            shader.setUniform2f("resolution", fbo.getWidth(), fbo.getHeight());
             //render frame
             ofSetColor(255, 255);
-            ofRect(0, 0, ofGetWidth(), ofGetHeight() );
+            ofRect(0, 0, fbo.getWidth(), fbo.getHeight());
             shader.end();
             texture3.end();
             
@@ -309,8 +328,8 @@ void ofApp::update(){
             //DID WE GET LOCATION
             if (gotNearSideLocation) {
                 //map ball hit location to x y pixel location
-                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+                float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
                 ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
                 //ofSetColor(255,255);
                 ofFill();
@@ -321,8 +340,8 @@ void ofApp::update(){
                 gotNearSideLocation = false;
             }
             if (gotFarSideLocation) {
-                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+                float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+                float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
                 ofSetColor(ofNoise( ofGetFrameNum() ) * 255 * 5, 255);
                 //ofSetColor(255,255);
                 ofFill();
@@ -351,10 +370,10 @@ void ofApp::update(){
             shader.setUniformTexture("backbuffer", texture1.getTextureReference(), 0);
             shader.setUniformTexture("tex0", texture2.getTextureReference(), 1);
             shader.setUniform1f("damping", (float)damping );
-            shader.setUniform2f("resolution", ofGetWidth(), ofGetHeight());
+            shader.setUniform2f("resolution", fbo.getWidth(), fbo.getHeight());
             //render frame
             ofSetColor(255, 255);
-            ofRect(0, 0, ofGetWidth(), ofGetHeight());
+            ofRect(0, 0, fbo.getWidth(), fbo.getHeight());
             shader.end();
             texture3.end();
             
@@ -367,7 +386,7 @@ void ofApp::update(){
         fish1.update(&fish2);
         fish2.update(&fish1);
         fishTexture.begin();
-        ofClear(0,0,0);   
+        ofClear(0, 0, 0, 0);
         // ofSetColor(fish1.color);
         // ofFill();
         // ofDrawEllipse(ofGetWidth()/2, ofGetHeight()/2, 35.025, 35.025);
@@ -381,8 +400,8 @@ void ofApp::update(){
     case 1:
         //handle events
         if (gotFarSideLocation) {
-            float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-            float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+            float x = ofMap(lastFarSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+            float y = ofMap(lastFarSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
             ofVec2f vec = ofVec2f(x,y);
             dubStepEvent(vec, false);
 
@@ -391,8 +410,8 @@ void ofApp::update(){
             gotFarSideLocation = false;
         }
         if (gotNearSideLocation) {
-            float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, ofGetWidth());
-            float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, ofGetHeight());
+            float x = ofMap(lastNearSideLocation.x, 0.0, tableWidth, 0.0, fbo.getWidth());
+            float y = ofMap(lastNearSideLocation.y, 0.0, tableLength, 0.0, fbo.getHeight());
             ofVec2f vec = ofVec2f(x,y);
             dubStepEvent(vec, true);
 
@@ -433,7 +452,7 @@ void ofApp::update(){
                 //ofSetBackgroundColor(backgroundCol);
                 ofSetColor(backgroundCol);
                 ofSetRectMode(OF_RECTMODE_CORNER);
-                ofDrawRectangle(0,0, ofGetWidth(), ofGetHeight());
+                ofDrawRectangle(0, 0, fbo.getWidth(), fbo.getHeight());
                 
                 ofSetColor(newCol);
                 ofFill();
@@ -443,7 +462,7 @@ void ofApp::update(){
                 //ofSetBackgroundColor(backgroundCol);
                 ofSetColor(backgroundCol);
                 ofSetRectMode(OF_RECTMODE_CORNER);
-                ofDrawRectangle(0,0, ofGetWidth(), ofGetHeight());
+                ofDrawRectangle(0, 0, fbo.getWidth(), fbo.getHeight());
                 
                 ofSetColor(newCol);
                 ofFill();
@@ -455,7 +474,7 @@ void ofApp::update(){
                 ofSetColor(backgroundCol);
                 ofFill();
                 ofSetRectMode(OF_RECTMODE_CORNER);
-                ofDrawRectangle(0,0, ofGetWidth(), ofGetHeight());
+                ofDrawRectangle(0, 0, fbo.getWidth(), fbo.getHeight());
                 
                 ofSetColor(newCol);
                 ofFill();
@@ -491,7 +510,7 @@ void ofApp::update(){
             ofColor c = ofColor::fromHsb(static_cast<int>(ofGetFrameNum() + ofMap(i, 0, 10, 0, 255)) % 255, 255, 255);
             ofSetColor(c);
             ofFill();
-            ofDrawRectangle(0.0, ((i * ofGetHeight() / 10)) % ofGetHeight(), ofGetWidth(), (ofGetHeight()/10)+1);
+            ofDrawRectangle(0.0, ((i * fbo.getHeight() / 10)), fbo.getWidth(), (fbo.getHeight()/10)+1);
             //ofDrawRectangle(0.0, (ofGetFrameNum()/2 + (i * ofGetHeight() / 10)) % ofGetHeight(), ofGetWidth(), (ofGetHeight()/10)+1);
 
         }
@@ -516,11 +535,11 @@ void ofApp::updateFbo(){
         case 0:
             ofEnableAlphaBlending();
             if ( even ) {
-                texture2.draw(0,0);
+                texture1.draw(0,0);
                 
             } else
             {
-                texture1.draw(0,0);
+                texture2.draw(0,0);
                 
             }
             fishTexture.draw(0,0);
@@ -538,6 +557,38 @@ void ofApp::updateFbo(){
     ofPopStyle();
     fbo.end();
     fbo.readToPixels(teensy.pixels1);
+}
+
+void ofApp::updateSensorSerial(){
+    if (!sensorSerialAvailable) {
+        return;
+    }
+
+    while (sensorSerial.available() > 0) {
+        int byte = sensorSerial.readByte();
+        if (byte == OF_SERIAL_ERROR) {
+            ofLogError("sensor serial") << "failed to read sensor serial port";
+            sensorSerialAvailable = false;
+            return;
+        }
+        if (byte == OF_SERIAL_NO_DATA) {
+            return;
+        }
+        if (byte == '\n') {
+            std::string line = sensorSerialLine;
+            sensorSerialLine.clear();
+            try {
+                MultilaterationResult result = calculateSerialLine(line);
+                handleLocation(ofVec2f(result.x, result.y), result.side == TableSide::Near);
+                cout << "got serial location x = " << result.x << " y = " << result.y
+                     << " valid = " << result.valid << endl;
+            } catch (const std::exception& error) {
+                ofLogWarning("sensor serial") << "discarding line '" << line << "': " << error.what();
+            }
+        } else if (byte != '\r') {
+            sensorSerialLine += static_cast<char>(byte);
+        }
+    }
 }
 
 void ofApp::playSplash(){
@@ -643,7 +694,30 @@ void ofApp::dubStepEvent(ofVec2f loc, bool isNear){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+#ifdef TARGET_OSX
+    ofSetColor(255);
+    ofRectangle previewBounds = getPreviewBounds();
+    fbo.draw(previewBounds);
+#endif
+}
 
+ofRectangle ofApp::getPreviewBounds(){
+    float scale = std::min(ofGetWidth() / fbo.getWidth(), ofGetHeight() / fbo.getHeight());
+    float width = fbo.getWidth() * scale;
+    float height = fbo.getHeight() * scale;
+    return ofRectangle((ofGetWidth() - width) / 2, (ofGetHeight() - height) / 2, width, height);
+}
+
+void ofApp::handleLocation(ofVec2f location, bool isNear){
+    if (isNear) {
+        lastNearSideLocation = location;
+        gotNearSideLocation = true;
+    } else {
+        lastFarSideLocation = location;
+        gotFarSideLocation = true;
+    }
+    lastLocation = location;
+    gotLocation = true;
 }
 
 //--------------------------------------------------------------
@@ -651,6 +725,12 @@ void ofApp::keyPressed(int key){
     ofLogVerbose(__func__) << "key: " << key;
     switch (key) 
     {
+        case 'g':
+        {
+            game = (game + 1) % 2;
+            cout << "setting game = " << game << endl;
+            break;
+        }
         case 'n':
         {
             mode++;
@@ -680,7 +760,17 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+#ifdef TARGET_OSX
+    ofRectangle previewBounds = getPreviewBounds();
+    if (!previewBounds.inside(x, y)) {
+        return;
+    }
+    ofVec2f location(
+        ofMap(x, previewBounds.getLeft(), previewBounds.getRight(), 0, tableWidth, true),
+        ofMap(y, previewBounds.getTop(), previewBounds.getBottom(), 0, tableLength, true)
+    );
+    handleLocation(location, location.y >= tableLength / 2);
+#endif
 }
 
 //--------------------------------------------------------------
