@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include "DubStepGame.h"
+#include "JavascriptGame.h"
 #include "RippleFishGame.h"
 #include "multilateration.h"
 
@@ -49,6 +50,7 @@ void ofApp::setup(){
     activeGameIndex = 0;
     games.push_back(std::unique_ptr<TableGame>(new RippleFishGame()));
     games.push_back(std::unique_ptr<TableGame>(new DubStepGame()));
+    games.push_back(std::unique_ptr<TableGame>(new JavascriptGame("games/example.js")));
 
     for (int i = 0; i < (int)games.size(); i++) {
         games[i]->setup(ofVec2f(fbo.getWidth(), fbo.getHeight()));

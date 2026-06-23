@@ -37,7 +37,8 @@
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-# PROJECT_EXTERNAL_SOURCE_PATHS = 
+PROJECT_EXTERNAL_SOURCE_PATHS += $(PROJECT_ROOT)/libs/quickjs
+PROJECT_INCLUDE_EXCLUSIONS += $(PROJECT_ROOT)/libs/quickjs
 
 ################################################################################
 # PROJECT EXCLUSIONS
@@ -77,6 +78,8 @@ PROJECT_EXCLUSIONS += $(PROJECT_ROOT)/tests/%
 # incorporated directly into the final executable application binary.
 ################################################################################
 # PROJECT_LDFLAGS=-Wl,-rpath=./libs
+
+PROJECT_CFLAGS += -D_GNU_SOURCE -DCONFIG_VERSION=\"2026-06-04\" -std=gnu17
 
 ################################################################################
 # PROJECT DEFINES
