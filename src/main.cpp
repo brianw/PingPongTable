@@ -1,9 +1,24 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#if defined(TARGET_LINUX)
+#include "ofAppEGLWindow.h"
+#endif
 
 //========================================================================
 int main( ){
-#ifdef TARGET_OPENGLES
+#if defined(TARGET_LINUX)
+    auto window = std::make_shared<ofAppEGLWindow>();
+    ofAppEGLWindowSettings settings;
+    settings.glesVersion = 2;
+    settings.eglWindowPreference = OF_APP_WINDOW_NATIVE;
+    settings.setSize(44,96);
+    settings.windowMode = OF_WINDOW;
+    ofInit();
+    ofGetMainLoop()->addWindow(window);
+    window->setup(settings);
+    ofRunApp(window, std::make_shared<ofApp>());
+    return ofRunMainLoop();
+#elif defined(TARGET_OPENGLES)
     ofGLESWindowSettings settings;
     settings.glesVersion = 2;
     //settings.width = 44;

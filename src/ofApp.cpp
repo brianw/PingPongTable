@@ -22,20 +22,20 @@ void ofApp::setup(){
     // SYSTEM SETTINGS
     //--------------------------------------
     stripWidth = 44;                            // pixel width of strip
-    stripHeight = 3;                            // pixel height of strip
+    stripHeight = 12;                            // pixel height of strip
     stripsPerPort = 8;                          // total number of strips per port
-    numPorts = 4;                               // total number of teensy ports?
-    brightness = 170;                           // LED brightness
+    numPorts = 1;                               // total number of teensy ports?
+    brightness = 255;                           // LED brightness
 
     // setup our teensys
     teensy.setup(stripWidth, stripHeight, 1, stripsPerPort, numPorts);
 
     /* Configure our teensy boards (portName, xOffset, yOffset, width%, height%, direction) */
-    teensy.serialConfigure("TEENSY4", 0, 0, 100, 25, 0);
-    teensy.serialConfigure("TEENSY3", 0, 25, 100, 25, 0);
-    teensy.serialConfigure("TEENSY1", 0, 50, 100, 25, 0);
-    teensy.serialConfigure("TEENSY2", 0, 75, 100, 25, 0);
-    sensorSerialAvailable = sensorSerial.setup("/dev/TEENSY5", 38400);
+    // teensy.serialConfigure("TEENSY4", 0, 0, 100, 25, 0);
+    // teensy.serialConfigure("TEENSY3", 0, 25, 100, 25, 0);
+    // teensy.serialConfigure("TEENSY1", 0, 50, 100, 25, 0);
+    teensy.serialConfigure("ttyACM0", 0, 0, 100, 100, 0);
+    sensorSerialAvailable = sensorSerial.setup("/dev/null", 38400); // /dev/cu.usbmodem198513701", 38400);
     
     // allocate the LED matrix frame buffer
     fbo.allocate(stripWidth, stripHeight * stripsPerPort * numPorts, GL_RGB);
